@@ -1,6 +1,8 @@
-﻿namespace Sportify.Services
+﻿using Sportify.Services.Interfaces;
+
+namespace Sportify.Services
 {
-    public class NotificationService
+    public class NotificationService : INotificationService
     {
     }
 }
