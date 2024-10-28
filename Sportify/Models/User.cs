@@ -17,7 +17,7 @@ namespace Sportify.Models
         [Required(ErrorMessage = "Необхідно ввести пароль!")]
         [MinLength(8, ErrorMessage = "Пароль має бути не менше 8 символів!")]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$", ErrorMessage = "Пароль має містити принаймні одну велику літеру, одну малу літеру та одну цифру!")]
-        public string? Password { get; set; }
+        public required string Password { get; set; }
 
         public string? Goals { get; set; }
 

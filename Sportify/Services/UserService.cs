@@ -6,6 +6,5 @@ namespace Sportify.Services
 {
     public class UserService : IUserService
     {
-        
     }
 }
