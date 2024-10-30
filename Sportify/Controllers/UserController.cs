@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// UserController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Sportify.Data;
 using Sportify.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Sportify.Services;
+using Sportify.Services.Interfaces;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Sportify.Controllers
 {
@@ -15,40 +13,24 @@ namespace Sportify.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly SportifyContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public UserController(SportifyContext context, IConfiguration configuration)
+        public UserController(IUserService userService)
         {
-            _context = context;
-            _configuration = configuration;
+            _userService = userService;
         }
 
-        // Регистрация пользователя
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
-            if (ModelState.IsValid)
+            var result = await _userService.Register(user);
+            if (!result.IsSuccess)
             {
-                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("Email", "Користувач з такою електронною поштою вже існує!");
-                    return BadRequest(ModelState);
-                }
-
-                // Хеширование пароля с помощью BCrypt
-                user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Реєстрація успішна!" });
+                return BadRequest(result.Message);
             }
-
-            return BadRequest(ModelState);
+            return Ok(result.Message);
         }
 
-        // Вход в систему
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] JsonElement body)
         {
@@ -60,51 +42,27 @@ namespace Sportify.Controllers
                 return BadRequest("Будь ласка, введіть електронну пошту та пароль.");
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+            var result = await _userService.Login(email, password);
+
+            if (!result.IsSuccess)
             {
-                return Unauthorized("Невірний логін або пароль.");
+                return Unauthorized(result.Message);
             }
-
-            // Создание JWT токена
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: creds
-            );
 
             return Ok(new
             {
                 message = "Користувач успішно авторизований.",
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                userId = user.Id
+                token = result.Token,
+                userId = result.UserId
             });
         }
 
-        // Профиль пользователя
+
         [Authorize]
         [HttpGet("profile/{id}")]
         public async Task<IActionResult> UserProfile(int id)
         {
-            var user = await _context.Users
-                .Include(u => u.Workouts)
-                .Include(u => u.Progresses)
-                .FirstOrDefaultAsync(u => u.Id == id);
-
+            var user = await _userService.GetUserProfile(id);
             if (user == null)
             {
                 return NotFound();
@@ -113,28 +71,16 @@ namespace Sportify.Controllers
             return Ok(user);
         }
 
-        // Выход из системы
-        [Authorize]
-        [HttpPost("logout")]
-        public IActionResult Logout()
-        {
-            return Ok("Користувач успішно вийшов.");
-        }
-
-        // Удаление пользователя
         [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
+            var success = await _userService.DeleteUser(id);
+            if (!success)
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-                return Ok("Користувача успішно видалено.");
+                return NotFound();
             }
-
-            return NotFound();
+            return Ok("Користувача успішно видалено.");
         }
-    }    
+    }
 }

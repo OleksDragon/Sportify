@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Sportify.Data;
+using Sportify.Services.Interfaces;
+using Sportify.Services;
 using System.Text;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +32,9 @@ builder.Services.AddDbContext<SportifyContext>(options =>
 
 // Регистрация IConfiguration
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+// Регистрация UserService
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Настройка CORS
 builder.Services.AddCors(options =>
