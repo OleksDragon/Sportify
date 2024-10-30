@@ -5,18 +5,18 @@ namespace Sportify.Services.Interfaces
     public interface IWorkoutService
     {
         // Создание тренировки
-        bool CreateWorkout(Workout workout);
+        Task<bool> CreateWorkoutAsync(Workout workout);
 
         // Получение всех тренировок пользователя
-        ICollection<Workout> GetAllUserWorkouts(int userId);
+        Task<ICollection<Workout>> GetAllUserWorkouts(int userId);
 
         // Получение тренировки по Id
-        Workout GetWorkoutById(int id);
+        Task<Workout> GetWorkoutById(int id);
 
         // Обновление тренировки
-        bool UpdateWorkout(int id, Workout newWorkout);
+        Task<bool> UpdateWorkout(int id, Workout newWorkout);
 
         // Удаление тренировки
-        bool DeleteWorkout(int id);
+        Task<bool> DeleteWorkout(int id);
     }
 }
