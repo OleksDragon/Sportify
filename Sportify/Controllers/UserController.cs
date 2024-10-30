@@ -82,5 +82,27 @@ namespace Sportify.Controllers
             }
             return Ok("Користувача успішно видалено.");
         }
+
+        [Authorize]
+        [HttpPut("profile/update/{id}")]
+        public async Task<IActionResult> UpdateProfile(int id, [FromBody] User updatedUser)
+        {
+            var result = await _userService.UpdateUserProfile(id, updatedUser);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
+
+
+        [Authorize]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            return Ok("Користувач успішно вийшов з аккаунта.");
+        }
+
     }
 }

@@ -74,8 +74,7 @@ namespace Sportify.Services
             };
         }
 
-
-        public async Task<User> GetUserProfile(int id)
+        public async Task<User?> GetUserProfile(int id)
         {
             return await _context.Users
                 .Include(u => u.Workouts)
@@ -95,7 +94,43 @@ namespace Sportify.Services
 
             return false;
         }
+
+        public async Task<UpdateProfileResult> UpdateUserProfile(int id, User updatedUser)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return new UpdateProfileResult { IsSuccess = false, Message = "Користувача не знайдено." };
+            }
+
+            if (!string.IsNullOrEmpty(updatedUser.UserName))
+            {
+                user.UserName = updatedUser.UserName;
+            }
+
+            if (!string.IsNullOrEmpty(updatedUser.Email))
+            {
+                user.Email = updatedUser.Email;
+            }
+
+            if (!string.IsNullOrEmpty(updatedUser.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
+            }
+
+            if (updatedUser.Goals != null)
+            {
+                user.Goals = updatedUser.Goals;
+            }
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new UpdateProfileResult { IsSuccess = true, Message = "Профіль успішно оновлено." };
+        }
+
     }
+
 
     public class RegistrationResult
     {
@@ -110,4 +145,11 @@ namespace Sportify.Services
         public int UserId { get; set; }
         public string? Token { get; set; }
     }
+
+    public class UpdateProfileResult
+    {
+        public bool IsSuccess { get; set; }
+        public string? Message { get; set; }
+    }
+
 }
