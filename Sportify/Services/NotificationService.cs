@@ -2,7 +2,7 @@
 
 namespace Sportify.Services
 {
-    public class NotificationService : INotificationService
+    public class NotificationService// : INotificationService
     {
         
     }

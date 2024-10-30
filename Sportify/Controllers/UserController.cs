@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Sportify.Data;
 using Sportify.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 
 namespace Sportify.Controllers
@@ -11,10 +16,12 @@ namespace Sportify.Controllers
     public class UserController : ControllerBase
     {
         private readonly SportifyContext _context;
+        private readonly IConfiguration _configuration;
 
-        public UserController(SportifyContext context)
+        public UserController(SportifyContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // Регистрация пользователя
@@ -54,21 +61,42 @@ namespace Sportify.Controllers
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
                 return Unauthorized("Невірний логін або пароль.");
             }
 
-            // Сравнение пароля с хешем
-            if (BCrypt.Net.BCrypt.Verify(password, user.Password))
-            {
-                return Ok(new { message = "Користувач успішно авторизований.", userId = user.Id });
-            }
+            // Создание JWT токена
+            var jwtSettings = _configuration.GetSection("JwtSettings");
 
-            return Unauthorized("Невірний логін або пароль.");
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(1),
+                signingCredentials: creds
+            );
+
+            return Ok(new
+            {
+                message = "Користувач успішно авторизований.",
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                userId = user.Id
+            });
         }
 
         // Профиль пользователя
+        [Authorize]
         [HttpGet("profile/{id}")]
         public async Task<IActionResult> UserProfile(int id)
         {
@@ -86,6 +114,7 @@ namespace Sportify.Controllers
         }
 
         // Выход из системы
+        [Authorize]
         [HttpPost("logout")]
         public IActionResult Logout()
         {
@@ -93,6 +122,7 @@ namespace Sportify.Controllers
         }
 
         // Удаление пользователя
+        [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {

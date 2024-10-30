@@ -3,7 +3,7 @@ using Sportify.Services.Interfaces;
 
 namespace Sportify.Services
 {
-    public class ProgressService : IProgressService
+    public class ProgressService// : IProgressService
     {
     }
 }

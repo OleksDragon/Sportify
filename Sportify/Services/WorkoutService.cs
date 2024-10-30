@@ -3,7 +3,7 @@ using Sportify.Services.Interfaces;
 
 namespace Sportify.Services
 {
-    public class WorkoutService : IWorkoutService
+    public class WorkoutService// : IWorkoutService
     {
     }
 }
