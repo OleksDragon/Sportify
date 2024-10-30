@@ -53,7 +53,8 @@ namespace Sportify.Controllers
             {
                 message = "Користувач успішно авторизований.",
                 token = result.Token,
-                userId = result.UserId
+                userId = result.UserId,
+                userName = result.UserName
             });
         }
 

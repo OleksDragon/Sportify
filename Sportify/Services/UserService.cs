@@ -70,6 +70,7 @@ namespace Sportify.Services
             {
                 IsSuccess = true,
                 UserId = user.Id,
+                UserName = user.UserName,
                 Token = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
@@ -143,6 +144,7 @@ namespace Sportify.Services
         public bool IsSuccess { get; set; }
         public string? Message { get; set; }
         public int UserId { get; set; }
+        public string? UserName { get; set; }
         public string? Token { get; set; }
     }
 
