@@ -3,6 +3,6 @@
     public interface INotificationService
     {
         // Отправка напоминания
-        void SendNotificaton(string theme, string message);
+        Task SendNotificaton(string toEmail, string theme, string message);
     }
 }
