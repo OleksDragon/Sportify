@@ -1,9 +1,11 @@
 ﻿// ProgressService - логика обработки прогресса и аналитики.
+using Microsoft.EntityFrameworkCore;
 using Sportify.Data;
 using Sportify.Models;
 
 // ProgressService - логика обработки прогресса и аналитики.
 using Sportify.Services.Interfaces;
+using System;
 
 namespace Sportify.Services
 {
@@ -14,29 +16,68 @@ namespace Sportify.Services
         {
             _context = context;
         }
-        public bool DeleteProgress(int id)
+
+        public async Task<bool> DeleteProgress(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var progress = await _context.Progresses.FindAsync(id);
+                if (progress != null)
+                {
+                    _context.Progresses.Remove(progress);
+                }
+                else return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
         }
 
-        public ICollection<Progress> GetAllUserProgresses(int userId)
+        public async Task<ICollection<Progress>> GetAllUserProgresses(int userId)
         {
-            throw new NotImplementedException();
+            return await _context.Progresses.ToArrayAsync();
         }
 
-        public Progress GetProgressById(int id)
+        public async Task<Progress> GetProgressById(int id)
         {
-            throw new NotImplementedException();
+            var progress = await _context.Progresses.FindAsync(id);
+            return progress; // Может быть null
         }
 
-        public bool StartProgres(Progress progress)
+        public async Task<bool> StartProgres(Progress progress)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _context.Progresses.AddAsync(progress);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
         }
 
-        public bool UpdateProgress(int id, Progress newProgress)
+        public async Task<bool> UpdateProgress(int id, Progress newProgress)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var progress = await _context.Progresses.FindAsync(id);
+                if (progress != null)
+                {
+                    _context.Progresses.Update(progress);
+                }
+                else return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
         }
     }
 }
