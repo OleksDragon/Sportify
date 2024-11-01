@@ -33,8 +33,10 @@ builder.Services.AddDbContext<SportifyContext>(options =>
 // Регистрация IConfiguration
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
-// Регистрация UserService
+// Регистрация Service
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
+
 
 // Настройка CORS
 builder.Services.AddCors(options =>
