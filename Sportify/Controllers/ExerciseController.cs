@@ -38,7 +38,7 @@ namespace Sportify.Controllers
         }
 
         // Добавление нового упражнения
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<IActionResult> CreateExercise([FromBody] Exercise exercise)
         {
             if (!ModelState.IsValid)
@@ -51,7 +51,7 @@ namespace Sportify.Controllers
         }
 
         // Обновление существующего упражнения
-        [HttpPut("{id}")]
+        [HttpPut("Update/{id}")]
         public async Task<IActionResult> UpdateExercise(int id, [FromBody] Exercise exercise)
         {
             if (id != exercise.Id)
@@ -70,9 +70,15 @@ namespace Sportify.Controllers
                 return NotFound();
             }
 
-            await _exerciseService.UpdateExerciseAsync(exercise);
+            // Обновляем только необходимые поля
+            existingExercise.Name = exercise.Name;
+            existingExercise.Description = exercise.Description;
+
+            await _exerciseService.UpdateExerciseAsync(existingExercise);
+
             return NoContent(); // Возвращает статус 204 (No Content), указывающий на успешное обновление
         }
+
 
         // Удаление упражнения
         [HttpDelete("{id}")]
