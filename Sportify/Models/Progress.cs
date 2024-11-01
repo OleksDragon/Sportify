@@ -7,12 +7,6 @@ namespace Sportify.Models
         public int Id { get; set; }
 
         [Required]
-        public int UserId { get; set; }  // Внешний ключ для связи с пользователем
-
-        [Required]
-        public int WorkoutId { get; set; }  // Внешний ключ для связи с тренировкой
-
-        [Required]
         public int Weight { get; set; }  // Вес (если применимо)
 
         [Required]

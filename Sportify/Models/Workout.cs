@@ -10,9 +10,6 @@ namespace Sportify.Models
         public string? Name { get; set; }  // Название тренировки
 
         [Required]
-        public int UserId { get; set; }  // Внешний ключ для связи с пользователем
-
-        [Required]
         public DateTime Date { get; set; }  // Дата тренировки
 
         public string? Description { get; set; }  // Описание тренировки

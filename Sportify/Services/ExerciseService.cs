@@ -18,13 +18,13 @@ namespace Sportify.Services
         // Получение всех упражнений
         public async Task<IEnumerable<Exercise>> GetAllExercisesAsync()
         {
-            return await _context.Exercises.Include(e => e.Workout).ToListAsync();
+            return await _context.Exercises.Include(e => e.Workouts).ToListAsync();
         }
 
         // Получение упражнения по ID
         public async Task<Exercise?> GetExerciseByIdAsync(int id)
         {
-            var exercise = await _context.Exercises.Include(e => e.Workout).FirstOrDefaultAsync(e => e.Id == id);
+            var exercise = await _context.Exercises.Include(e => e.Workouts).FirstOrDefaultAsync(e => e.Id == id);
             if (exercise == null)
             {
                 throw new KeyNotFoundException($"Упражнение с идентификатором {id} не найдено.");

@@ -11,10 +11,7 @@ namespace Sportify.Models
 
         public string? Description { get; set; }  // Описание упражнения
 
-        [Required]
-        public int WorkoutId { get; set; }  // Внешний ключ для связи с тренировкой
-
         // Связь с тренировкой
-        public virtual Workout? Workout { get; set; }
+        public virtual ICollection<Workout> Workouts { get; set; } = new List<Workout>();
     }
 }
