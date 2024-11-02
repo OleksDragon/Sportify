@@ -62,7 +62,7 @@ namespace Sportify.Services
 
         public async Task<ICollection<Workout>> GetAllUserWorkouts(int userId)
         {
-            return await _context.Workouts.ToArrayAsync();
+            return await _context.Workouts.Where(w => w.User.Id == userId).ToArrayAsync();
         }
 
         public async Task<Workout> GetWorkoutById(int id)
