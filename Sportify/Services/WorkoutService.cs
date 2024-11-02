@@ -39,6 +39,7 @@ namespace Sportify.Services
                 if (workout != null)
                 {
                     _context.Workouts.Remove(workout);
+                    await _context.SaveChangesAsync();
                 }
                 else
                 {
@@ -69,9 +70,26 @@ namespace Sportify.Services
             try
             {
                 var workout = await _context.Workouts.FirstOrDefaultAsync(x => x.Id == id);
+
                 if (workout != null)
                 {
+                    if (!string.IsNullOrWhiteSpace(newWorkout.Name))
+                    {
+                        workout.Name = newWorkout.Name;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(newWorkout.Description))
+                    {
+                        workout.Description = newWorkout.Description;
+                    }
+
+                    if (newWorkout.Date != null)
+                    {
+                        workout.Date = newWorkout.Date;
+                    }
+
                     _context.Workouts.Update(workout);
+                    await _context.SaveChangesAsync();
                 }
                 else
                 {

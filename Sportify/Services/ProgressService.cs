@@ -25,6 +25,7 @@ namespace Sportify.Services
                 if (progress != null)
                 {
                     _context.Progresses.Remove(progress);
+                    await _context.SaveChangesAsync();
                 }
                 else return false;
             }
@@ -52,6 +53,7 @@ namespace Sportify.Services
             try
             {
                 await _context.Progresses.AddAsync(progress);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -66,9 +68,25 @@ namespace Sportify.Services
             try
             {
                 var progress = await _context.Progresses.FindAsync(id);
+
                 if (progress != null)
                 {
+                    if (newProgress.Weight != 0 && newProgress.Weight != null)
+                    {
+                        progress.Weight = newProgress.Weight;
+                    }
+
+                    if (newProgress.Reps != 0 && newProgress.Reps != null)
+                    {
+                        progress.Reps = newProgress.Reps;
+                    }
+
+                    if (newProgress.Date != null)
+                    {
+                        progress.Date = newProgress.Date;
+                    }
                     _context.Progresses.Update(progress);
+                    await _context.SaveChangesAsync();
                 }
                 else return false;
             }
