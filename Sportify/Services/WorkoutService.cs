@@ -16,19 +16,25 @@ namespace Sportify.Services
             _context = context;
         }
 
-        public async Task<bool> CreateWorkoutAsync(Workout workout)
+        public async Task<bool> CreateWorkoutAsync(int id, Workout workout)
         {
             try
             {
-                await _context.Workouts.AddAsync(workout);
-                await _context.SaveChangesAsync();
+                var user = await _context.Users.FindAsync(id);
+                if (user != null)
+                {
+                    workout.User = user;
+                    await _context.Workouts.AddAsync(workout);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
             }
-            return true;
         }
 
         public async Task<bool> DeleteWorkout(int id)

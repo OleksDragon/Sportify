@@ -36,6 +36,8 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 // Регистрация Service
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddScoped<IProgressService, ProgressService>();
 
 
 // Настройка CORS

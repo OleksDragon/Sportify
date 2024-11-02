@@ -4,8 +4,8 @@ namespace Sportify.Services.Interfaces
 {
     public interface IWorkoutService
     {
-        // Создание тренировки
-        Task<bool> CreateWorkoutAsync(Workout workout);
+        // Создание тренировки с привязкой к пользователю
+        Task<bool> CreateWorkoutAsync(int id, Workout workout);
 
         // Получение всех тренировок пользователя
         Task<ICollection<Workout>> GetAllUserWorkouts(int userId);

@@ -1,4 +1,5 @@
 ﻿// WorkoutSessionController - для ведения и завершения тренировок.
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sportify.Models;
 using Sportify.Services.Interfaces;
@@ -42,12 +43,14 @@ namespace Sportify.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateWorkoutAsync([FromBody] Workout workout)
+        // Создание упражнения и привязка к пользователю
+        [Authorize]
+        [HttpPost("{id}")]
+        public async Task<IActionResult> CreateWorkoutAsync(int id, [FromBody] Workout workout)
         {
             try
             {
-                if (await _service.CreateWorkoutAsync(workout))
+                if (await _service.CreateWorkoutAsync(id, workout))
                 {
                     return Ok("Тренування додано");
                 }
@@ -60,6 +63,8 @@ namespace Sportify.Controllers
             }
         }
 
+        // Обновление
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateWorkout(int id, [FromBody] Workout workout)
         {
@@ -78,6 +83,8 @@ namespace Sportify.Controllers
             }
         }
 
+        // Удаление
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWorkout(int id)
         {
