@@ -10,6 +10,12 @@ namespace Sportify.Services.Interfaces
         // Получение всех тренировок пользователя
         Task<ICollection<Workout>> GetAllUserWorkouts(int userId);
 
+        // Получение всех упражнений тренировки
+        Task<ICollection<Exercise>> GetExercisesByWorkoutId(int workoutId);
+
+        // Установка упражнений тренировки
+        Task<bool> SetExercisesByWorkoutId(int workoutId, ICollection<int> exercisesId);
+
         // Получение тренировки по Id
         Task<Workout> GetWorkoutById(int id);
 

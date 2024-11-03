@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Sportify.Models
 {
@@ -16,9 +17,11 @@ namespace Sportify.Models
         public DateTime Date { get; set; }  // Дата записи прогресса
 
         // Связь с пользователем
+        [JsonIgnore]
         public virtual User? User { get; set; }
 
         // Связь с тренировкой
+        [JsonIgnore]
         public virtual Workout? Workout { get; set; }
     }
 }

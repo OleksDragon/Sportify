@@ -18,7 +18,7 @@ namespace Sportify.Services
         // Получение всех упражнений
         public async Task<IEnumerable<Exercise>> GetAllExercisesAsync()
         {
-            return await _context.Exercises.Include(e => e.Workouts).ToListAsync();
+            return await _context.Exercises.ToListAsync();
         }
 
         // Получение упражнения по ID

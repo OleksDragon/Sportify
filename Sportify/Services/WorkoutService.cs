@@ -65,10 +65,55 @@ namespace Sportify.Services
             return await _context.Workouts.Where(w => w.User.Id == userId).ToArrayAsync();
         }
 
+        public async Task<ICollection<Exercise>> GetExercisesByWorkoutId(int workoutId)
+        {
+            return await _context.Workouts.Where(w => w.Id == workoutId).SelectMany(w => w.Exercises).ToListAsync();
+        }
+
         public async Task<Workout> GetWorkoutById(int id)
         {
             var workout = await _context.Workouts.FirstOrDefaultAsync(x => x.Id == id);
             return workout; // Может быть null
+        }
+
+        public async Task<bool> SetExercisesByWorkoutId(int workoutId, ICollection<int> exercisesId)
+        {
+            try
+            {
+                Workout workout = await _context.Workouts
+                .Include(w => w.Exercises)
+                .FirstOrDefaultAsync(w => w.Id == workoutId);
+
+                if (workout == null)
+                {
+                    Console.WriteLine("Тренировка не найдена");
+                    return false;
+                }
+
+                workout.Exercises.Clear();
+
+                foreach (var exerciseId in exercisesId)
+                {
+                    var exercise = await _context.Exercises.FirstOrDefaultAsync(e => e.Id == exerciseId);
+
+                    if (exercise != null)
+                    {
+                        workout.Exercises.Add(exercise);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Упражнение не найдено");
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
         }
 
         public async Task<bool> UpdateWorkout(int id, Workout newWorkout)

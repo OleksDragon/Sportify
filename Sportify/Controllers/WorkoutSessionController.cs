@@ -43,6 +43,46 @@ namespace Sportify.Controllers
             }
         }
 
+        // Получение упражнений которые задействованы в тренироке
+        [HttpGet("Exercises/{id}")]
+        public async Task<IActionResult> GetExercisesByWorkoutId(int id)
+        {
+            try
+            {
+                if(await _service.GetWorkoutById(id) != null)
+                {
+                    return Ok(await _service.GetExercisesByWorkoutId(id));
+                }
+                return BadRequest("Тренуванння не знайдено");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest("Помилка на сервері");
+            }
+        }
+
+        // Запись в тренировку(id) упражнений
+        [Authorize]
+        [HttpPatch("Exercises/{id}")]
+        public async Task<IActionResult> SetExercisesByWorkoutId(int id, [FromBody] ICollection<int> exercisesId)
+        {
+            try
+            {
+                if (await _service.GetWorkoutById(id) != null)
+                {
+                    await _service.SetExercisesByWorkoutId(id, exercisesId);
+                    return Ok();
+                }
+                return BadRequest("Тренуванння не знайдено");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest("Помилка на сервері");
+            }
+        }
+
         // Создание упражнения и привязка к пользователю
         [Authorize]
         [HttpPost("{id}")]

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Sportify.Models
 {
@@ -22,9 +23,11 @@ namespace Sportify.Models
         public string? Goals { get; set; }
 
         // Связь с тренировками
+        [JsonIgnore]
         public virtual ICollection<Workout>? Workouts { get; set; }
 
         // Связь с прогрессом
+        [JsonIgnore]
         public virtual ICollection<Progress>? Progresses { get; set; }
     }
 }

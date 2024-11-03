@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Sportify.Models
 {
@@ -12,6 +13,7 @@ namespace Sportify.Models
         public string? Description { get; set; }  // Описание упражнения
 
         // Связь с тренировкой
+        [JsonIgnore]
         public virtual ICollection<Workout> Workouts { get; set; } = new List<Workout>();
     }
 }
