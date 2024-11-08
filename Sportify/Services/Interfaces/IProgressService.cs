@@ -5,7 +5,7 @@ namespace Sportify.Services.Interfaces
     public interface IProgressService
     {
         // Создание записи прогресса
-        Task<bool> StartProgres(Progress progress);
+        Task<bool> StartProgress(Progress progress);
 
         // Получение всех прогрессов конкретного пользователя
         Task<ICollection<Progress>> GetAllUserProgresses(int userId);

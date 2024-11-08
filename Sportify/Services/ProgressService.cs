@@ -48,7 +48,7 @@ namespace Sportify.Services
             return progress; // Может быть null
         }
 
-        public async Task<bool> StartProgres(Progress progress)
+        public async Task<bool> StartProgress(Progress progress)
         {
             try
             {
@@ -71,20 +71,17 @@ namespace Sportify.Services
 
                 if (progress != null)
                 {
-                    if (newProgress.Weight != 0 && newProgress.Weight != null)
+                    if (newProgress.Weight >= 0)
                     {
                         progress.Weight = newProgress.Weight;
                     }
 
-                    if (newProgress.Reps != 0 && newProgress.Reps != null)
+                    if (newProgress.Reps != 0)
                     {
                         progress.Reps = newProgress.Reps;
                     }
 
-                    if (newProgress.Date != null)
-                    {
-                        progress.Date = newProgress.Date;
-                    }
+                    progress.Date = newProgress.Date;
                     _context.Progresses.Update(progress);
                     await _context.SaveChangesAsync();
                 }

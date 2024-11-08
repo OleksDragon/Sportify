@@ -38,6 +38,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
 // Настройка CORS
