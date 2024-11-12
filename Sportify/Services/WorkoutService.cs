@@ -20,10 +20,13 @@ namespace Sportify.Services
         {
             try
             {
+                var type = _context.WorkoutTypes.FirstOrDefault(t => t.Id == workout.WorkoutTypeId);
                 var user = await _context.Users.FindAsync(id);
-                if (user != null)
+
+                if (user != null && type != null)
                 {
                     workout.User = user;
+                    workout.WorkoutType = type;
                     await _context.Workouts.AddAsync(workout);
                     await _context.SaveChangesAsync();
                     return true;
@@ -137,6 +140,18 @@ namespace Sportify.Services
                     if (newWorkout.Date != null)
                     {
                         workout.Date = newWorkout.Date;
+                    }
+
+                    var type = _context.WorkoutTypes.FirstOrDefault(x => x.Id == newWorkout.WorkoutTypeId);
+
+                    if (type != null)
+                    {
+                        workout.WorkoutType = type;
+                    }
+
+                    if(newWorkout.Complexity <= 10 && newWorkout.Complexity >= 1)
+                    {
+                        workout.Complexity = newWorkout.Complexity;
                     }
 
                     _context.Workouts.Update(workout);

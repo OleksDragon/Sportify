@@ -15,6 +15,15 @@ namespace Sportify.Models
 
         public string? Description { get; set; }  // Описание тренировки
 
+        [Required]
+        public int WorkoutTypeId { get; set; }
+
+        public WorkoutType? WorkoutType { get; set; } // Тип тренировки
+
+        [Required]
+        [Range(minimum: 1, maximum: 10)]
+        public int Complexity { get; set; } // Сложность (от 1 до 10)
+
         // Связь с пользователем
         [JsonIgnore]
         public virtual User? User { get; set; }
