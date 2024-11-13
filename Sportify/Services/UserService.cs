@@ -124,6 +124,31 @@ namespace Sportify.Services
                 user.Goals = updatedUser.Goals;
             }
 
+            if (!string.IsNullOrEmpty(updatedUser.PhotoBase64))
+            {
+                user.PhotoBase64 = updatedUser.PhotoBase64;
+            }
+
+            if (!string.IsNullOrEmpty(updatedUser.Gender))
+            {
+                user.Gender = updatedUser.Gender;
+            }
+
+            if (updatedUser.Age.HasValue)
+            {
+                user.Age = updatedUser.Age;
+            }
+
+            if (updatedUser.Height.HasValue)
+            {
+                user.Height = updatedUser.Height;
+            }
+
+            if (updatedUser.Weight.HasValue)
+            {
+                user.Weight = updatedUser.Weight;
+            }
+
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 

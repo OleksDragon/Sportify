@@ -12,8 +12,8 @@ using Sportify.Data;
 namespace Sportify.Migrations
 {
     [DbContext(typeof(SportifyContext))]
-    [Migration("20241027031959_SportifyDBMigration")]
-    partial class SportifyDBMigration
+    [Migration("20241112170027_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace Sportify.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ExerciseWorkout", b =>
+                {
+                    b.Property<int>("ExercisesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkoutsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExercisesId", "WorkoutsId");
+
+                    b.HasIndex("WorkoutsId");
+
+                    b.ToTable("ExerciseWorkout");
+                });
 
             modelBuilder.Entity("Sportify.Models.Exercise", b =>
                 {
@@ -40,12 +55,7 @@ namespace Sportify.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("WorkoutId");
 
                     b.ToTable("Exercises");
                 });
@@ -64,13 +74,13 @@ namespace Sportify.Migrations
                     b.Property<int>("Reps")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.Property<int>("Weight")
                         .HasColumnType("int");
 
-                    b.Property<int>("WorkoutId")
+                    b.Property<int?>("WorkoutId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -119,6 +129,9 @@ namespace Sportify.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Complexity")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -129,40 +142,85 @@ namespace Sportify.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkoutTypeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("WorkoutTypeId");
+
                     b.ToTable("Workouts");
                 });
 
-            modelBuilder.Entity("Sportify.Models.Exercise", b =>
+            modelBuilder.Entity("Sportify.Models.WorkoutType", b =>
                 {
-                    b.HasOne("Sportify.Models.Workout", "Workout")
-                        .WithMany("Exercises")
-                        .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageBase64")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkoutTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Вправи, що підвищують пульс і покращують роботу серця та легенів. Приклади: біг, ходьба, плавання, велоспорт, стрибки на скакалці. Вони допомагають спалювати калорії, підвищують витривалість і зміцнюють серцево-судинну систему.",
+                            ImageBase64 = "Згодом!!!!",
+                            Title = "Кардіо"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Тренування, спрямовані на зміцнення м''язів та підвищення їх сили. Основні види: вправи з вагою тіла (віджимання, присідання), заняття з гантелями, штангою або на тренажерах. Силові вправи допомагають наростити м''язову масу, покращують обмін речовин та підвищують загальну фізичну витривалість.",
+                            ImageBase64 = "Згодом!!!!",
+                            Title = "Силове"
+                        });
+                });
+
+            modelBuilder.Entity("ExerciseWorkout", b =>
+                {
+                    b.HasOne("Sportify.Models.Exercise", null)
+                        .WithMany()
+                        .HasForeignKey("ExercisesId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Workout");
+                    b.HasOne("Sportify.Models.Workout", null)
+                        .WithMany()
+                        .HasForeignKey("WorkoutsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sportify.Models.Progress", b =>
                 {
                     b.HasOne("Sportify.Models.User", "User")
                         .WithMany("Progresses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.HasOne("Sportify.Models.Workout", "Workout")
                         .WithMany("Progresses")
-                        .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("WorkoutId");
 
                     b.Navigation("User");
 
@@ -173,11 +231,17 @@ namespace Sportify.Migrations
                 {
                     b.HasOne("Sportify.Models.User", "User")
                         .WithMany("Workouts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("Sportify.Models.WorkoutType", "WorkoutType")
+                        .WithMany()
+                        .HasForeignKey("WorkoutTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
+
+                    b.Navigation("WorkoutType");
                 });
 
             modelBuilder.Entity("Sportify.Models.User", b =>
@@ -189,8 +253,6 @@ namespace Sportify.Migrations
 
             modelBuilder.Entity("Sportify.Models.Workout", b =>
                 {
-                    b.Navigation("Exercises");
-
                     b.Navigation("Progresses");
                 });
 #pragma warning restore 612, 618

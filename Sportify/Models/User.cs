@@ -22,6 +22,22 @@ namespace Sportify.Models
 
         public string? Goals { get; set; }
 
+        [StringLength(100000, ErrorMessage = "Розмір зображення перевищує допустимий ліміт.")]
+        public string? PhotoBase64 { get; set; }
+
+        [Required(ErrorMessage = "Необхідно вказати стать!")]
+        [RegularExpression("^(Чоловік|Жінка)$", ErrorMessage = "Пол має бути 'Чоловік' або 'Жінка'.")]
+        public string? Gender { get; set; }
+
+        [Range(12, 120, ErrorMessage = "Вік має бути від 12 до 120 років.")]
+        public int? Age { get; set; }
+       
+        [Range(120, 250, ErrorMessage = "Зріст має бути в діапазоні від 120 до 250 см.")]
+        public int? Height { get; set; }
+
+        [Range(30, 200, ErrorMessage = "Вага має бути в діапазоні від 30 до 200 кг.")]
+        public double? Weight { get; set; }
+
         // Связь с тренировками
         [JsonIgnore]
         public virtual ICollection<Workout>? Workouts { get; set; }

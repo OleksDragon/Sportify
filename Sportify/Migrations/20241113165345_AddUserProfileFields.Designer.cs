@@ -12,8 +12,8 @@ using Sportify.Data;
 namespace Sportify.Migrations
 {
     [DbContext(typeof(SportifyContext))]
-    [Migration("20241101064058_ChangeContext")]
-    partial class ChangeContext
+    [Migration("20241113165345_AddUserProfileFields")]
+    partial class AddUserProfileFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,21 +100,38 @@ namespace Sportify.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Goals")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoBase64")
+                        .HasMaxLength(100000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<double?>("Weight")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -129,6 +146,9 @@ namespace Sportify.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Complexity")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -142,11 +162,56 @@ namespace Sportify.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("WorkoutTypeId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("WorkoutTypeId");
+
                     b.ToTable("Workouts");
+                });
+
+            modelBuilder.Entity("Sportify.Models.WorkoutType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageBase64")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkoutTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Вправи, що підвищують пульс і покращують роботу серця та легенів. Приклади: біг, ходьба, плавання, велоспорт, стрибки на скакалці. Вони допомагають спалювати калорії, підвищують витривалість і зміцнюють серцево-судинну систему.",
+                            ImageBase64 = "Згодом!!!!",
+                            Title = "Кардіо"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Тренування, спрямовані на зміцнення м''язів та підвищення їх сили. Основні види: вправи з вагою тіла (віджимання, присідання), заняття з гантелями, штангою або на тренажерах. Силові вправи допомагають наростити м''язову масу, покращують обмін речовин та підвищують загальну фізичну витривалість.",
+                            ImageBase64 = "Згодом!!!!",
+                            Title = "Силове"
+                        });
                 });
 
             modelBuilder.Entity("ExerciseWorkout", b =>
@@ -185,7 +250,15 @@ namespace Sportify.Migrations
                         .WithMany("Workouts")
                         .HasForeignKey("UserId");
 
+                    b.HasOne("Sportify.Models.WorkoutType", "WorkoutType")
+                        .WithMany()
+                        .HasForeignKey("WorkoutTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("User");
+
+                    b.Navigation("WorkoutType");
                 });
 
             modelBuilder.Entity("Sportify.Models.User", b =>

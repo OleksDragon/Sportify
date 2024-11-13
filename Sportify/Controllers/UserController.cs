@@ -97,7 +97,6 @@ namespace Sportify.Controllers
             return Ok(result.Message);
         }
 
-
         [Authorize]
         [HttpPost("logout")]
         public IActionResult Logout()
