@@ -21,6 +21,9 @@ namespace Sportify.Models
         public WorkoutType? WorkoutType { get; set; } // Тип тренировки
 
         [Required]
+        public string WorkoutGoal { get; set; } // Цель тренировки (набор массы, похудение)
+
+        [Required]
         [Range(minimum: 1, maximum: 10)]
         public int Complexity { get; set; } // Сложность (от 1 до 10)
 

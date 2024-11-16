@@ -25,7 +25,7 @@ namespace Sportify.Models
         [StringLength(100000, ErrorMessage = "Розмір зображення перевищує допустимий ліміт.")]
         public string? PhotoBase64 { get; set; }
 
-        [Required(ErrorMessage = "Необхідно вказати стать!")]
+        //[Required(ErrorMessage = "Необхідно вказати стать!")]
         [RegularExpression("^(Чоловік|Жінка)$", ErrorMessage = "Пол має бути 'Чоловік' або 'Жінка'.")]
         public string? Gender { get; set; }
 
