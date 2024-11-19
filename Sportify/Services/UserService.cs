@@ -27,15 +27,16 @@ namespace Sportify.Services
         {
             if (await _context.Users.AnyAsync(u => u.Email == user.Email))
             {
-                return new RegistrationResult { IsSuccess = false, Message = "Користувач з такою електронною поштою вже існує!" };
+                return new RegistrationResult { IsSuccess = false, Message = "Пользователь с таким email уже существует!" };
             }
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return new RegistrationResult { IsSuccess = true, Message = "Реєстрація успішна!" };
+            return new RegistrationResult { IsSuccess = true, Message = "Регистрация успешна!" };
         }
+
 
         public async Task<LoginResult> Login(string email, string password)
         {

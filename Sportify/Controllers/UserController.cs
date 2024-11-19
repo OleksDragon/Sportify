@@ -23,13 +23,21 @@ namespace Sportify.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Message = "Ошибка валидации", Errors = errors });
+            }
+
             var result = await _userService.Register(user);
             if (!result.IsSuccess)
             {
-                return BadRequest(result.Message);
+                return BadRequest(new { Message = result.Message });
             }
-            return Ok(result.Message);
+
+            return Ok(new { Message = result.Message });
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] JsonElement body)
