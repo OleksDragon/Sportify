@@ -22,6 +22,8 @@ namespace Sportify.Services.Interfaces
         // Обновление тренировки
         Task<bool> UpdateWorkout(int id, Workout newWorkout);
 
+        Task<bool> CompleteWorkout(int id);
+
         // Удаление тренировки
         Task<bool> DeleteWorkout(int id);
     }

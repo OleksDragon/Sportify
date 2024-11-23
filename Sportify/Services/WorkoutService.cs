@@ -16,6 +16,31 @@ namespace Sportify.Services
             _context = context;
         }
 
+        public async Task<bool> CompleteWorkout(int id)
+        {
+            try
+            {
+                var workout = await _context.Workouts.FirstOrDefaultAsync(x => x.Id == id);
+                if (workout != null)
+                {
+                    workout.IsCompleted = true;
+
+                    _context.Workouts.Update(workout);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
         public async Task<bool> CreateWorkoutAsync(int id, Workout workout)
         {
             try

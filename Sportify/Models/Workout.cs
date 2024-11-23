@@ -18,7 +18,7 @@ namespace Sportify.Models
         [Required]
         public int WorkoutTypeId { get; set; }
 
-        public WorkoutType? WorkoutType { get; set; } // Тип тренировки
+        public WorkoutType? WorkoutType { get; set; } // Тип тренировки (кардио, силовая)
 
         [Required]
         public string WorkoutGoal { get; set; } // Цель тренировки (набор массы, похудение)
@@ -26,6 +26,8 @@ namespace Sportify.Models
         [Required]
         [Range(minimum: 1, maximum: 10)]
         public int Complexity { get; set; } // Сложность (от 1 до 10)
+
+        public bool IsCompleted { get; set; } = false;
 
         // Связь с пользователем
         [JsonIgnore]

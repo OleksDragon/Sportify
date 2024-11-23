@@ -123,6 +123,21 @@ namespace Sportify.Controllers
             }
         }
 
+        // Выполнение тренировки
+        [Authorize]
+        [HttpPost("complete/{id}")]
+        public async Task<IActionResult> CompleteWorkout(int id)
+        {
+            if (await _service.CompleteWorkout(id))
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Помилка оновлення");
+            }
+        }
+
         // Удаление
         [Authorize]
         [HttpDelete("{id}")]
