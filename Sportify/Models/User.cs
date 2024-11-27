@@ -21,27 +21,31 @@ namespace Sportify.Models
             ErrorMessage = "Пароль повинен містити хоча б одну заголовну літеру, одну малу літеру та одну цифру!")]
         public string Password { get; set; } = null!;
 
-        public string? Goals { get; set; }
+        public string? Goals { get; set; } = null;
 
         [StringLength(100000, ErrorMessage = "Розмір зображення перевищує допустимий ліміт.")]
-        public string? PhotoBase64 { get; set; }
+        public string? PhotoBase64 { get; set; } = null;
 
-        [RegularExpression("^(Чоловік|Жінка)$", ErrorMessage = "Пол має бути 'Чоловік' или 'Жінка'.")]
-        public string? Gender { get; set; }
+        [RegularExpression("^(Чоловік|Жінка)$", ErrorMessage = "Пол має бути 'Чоловік' або 'Жінка'.")]
+        public string? Gender { get; set; } = null;
 
         [Range(12, 120, ErrorMessage = "Вік має бути від 12 до 120 років.")]
-        public int? Age { get; set; }
+        public int? Age { get; set; } = null;
 
         [Range(120, 250, ErrorMessage = "Зріст має бути від 120 до 250 см.")]
-        public int? Height { get; set; }
+        public int? Height { get; set; } = null;
 
         [Range(30, 200, ErrorMessage = "Вага має бути від 30 до 200 кг.")]
-        public double? Weight { get; set; }
+        public double? Weight { get; set; } = null;
+
+        [Required]
+        [RegularExpression("^(admin|trainer|user)$", ErrorMessage = "Роль має бути 'admin', 'trainer' або 'user'.")]
+        public string Role { get; set; } = "user";
 
         [JsonIgnore]
-        public virtual ICollection<Workout>? Workouts { get; set; }
+        public virtual ICollection<Workout>? Workouts { get; set; } = null;
 
         [JsonIgnore]
-        public virtual ICollection<Progress>? Progresses { get; set; }
+        public virtual ICollection<Progress>? Progresses { get; set; } = null;
     }
 }

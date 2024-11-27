@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Sportify.Models;
 using Sportify.Services;
 using Sportify.Services.Interfaces;
+using System.Data;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -62,7 +64,8 @@ namespace Sportify.Controllers
                 message = "Користувач успішно авторизований.",
                 token = result.Token,
                 userId = result.UserId,
-                userName = result.UserName
+                userName = result.UserName,
+                role = result.Role
             });
         }
 
@@ -112,5 +115,12 @@ namespace Sportify.Controllers
             return Ok("Користувач успішно вийшов з аккаунта.");
         }
 
+        [Authorize(Roles = "admin")]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _userService.GetAllUsers();
+            return Ok(users);
+        }
     }
 }

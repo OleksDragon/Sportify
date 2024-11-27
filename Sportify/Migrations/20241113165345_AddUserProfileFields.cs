@@ -20,8 +20,7 @@ namespace Sportify.Migrations
                 name: "Gender",
                 table: "Users",
                 type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+                nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "Height",

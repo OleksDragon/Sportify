@@ -12,8 +12,8 @@ using Sportify.Data;
 namespace Sportify.Migrations
 {
     [DbContext(typeof(SportifyContext))]
-    [Migration("20241119200144_AddUserRegistrationFields")]
-    partial class AddUserRegistrationFields
+    [Migration("20241127182448_AddUserRole")]
+    partial class AddUserRole
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -124,6 +124,10 @@ namespace Sportify.Migrations
                         .HasMaxLength(100000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -153,6 +157,9 @@ namespace Sportify.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()

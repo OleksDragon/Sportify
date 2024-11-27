@@ -9,5 +9,6 @@ namespace Sportify.Services.Interfaces
         Task<User?> GetUserProfile(int id);
         Task<bool> DeleteUser(int id);
         Task<UpdateProfileResult> UpdateUserProfile(int id, User updatedUser);
+        Task<IEnumerable<User>> GetAllUsers();
     }
 }

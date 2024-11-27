@@ -27,14 +27,20 @@ namespace Sportify.Services
         {
             if (await _context.Users.AnyAsync(u => u.Email == user.Email))
             {
-                return new RegistrationResult { IsSuccess = false, Message = "Пользователь с таким email уже существует!" };
+                return new RegistrationResult { IsSuccess = false, Message = "Користувач із таким email вже існує!" };
+            }
+
+            // Установка роли по умолчанию, если она не указана
+            if (string.IsNullOrEmpty(user.Role))
+            {
+                user.Role = "user";
             }
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return new RegistrationResult { IsSuccess = true, Message = "Регистрация успешна!" };
+            return new RegistrationResult { IsSuccess = true, Message = "Реєстрація успішна!" };
         }
 
 
@@ -53,7 +59,8 @@ namespace Sportify.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
@@ -72,7 +79,8 @@ namespace Sportify.Services
                 IsSuccess = true,
                 UserId = user.Id,
                 UserName = user.UserName,
-                Token = new JwtSecurityTokenHandler().WriteToken(token)
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                Role = user.Role
             };
         }
 
@@ -86,16 +94,33 @@ namespace Sportify.Services
 
         public async Task<bool> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
+            var user = await _context.Users
+                .Include(u => u.Workouts)
+                .Include(u => u.Progresses)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-                return true;
+                return false;
             }
 
-            return false;
+            // Удаление связанных данных
+            if (user.Workouts != null)
+            {
+                _context.Workouts.RemoveRange(user.Workouts);
+            }
+
+            if (user.Progresses != null)
+            {
+                _context.Progresses.RemoveRange(user.Progresses);
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
+
 
         public async Task<UpdateProfileResult> UpdateUserProfile(int id, User updatedUser)
         {
@@ -156,6 +181,10 @@ namespace Sportify.Services
             return new UpdateProfileResult { IsSuccess = true, Message = "Профіль успішно оновлено." };
         }
 
+        public async Task<IEnumerable<User>> GetAllUsers()
+        {
+            return await _context.Users.ToListAsync();
+        }
     }
 
 
@@ -172,6 +201,7 @@ namespace Sportify.Services
         public int UserId { get; set; }
         public string? UserName { get; set; }
         public string? Token { get; set; }
+        public string? Role { get; set; }
     }
 
     public class UpdateProfileResult
