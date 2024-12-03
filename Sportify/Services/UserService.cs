@@ -80,7 +80,7 @@ namespace Sportify.Services
                 UserId = user.Id,
                 UserName = user.UserName,
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Role = user.Role
+                Role = user.Role,
             };
         }
 
@@ -175,6 +175,11 @@ namespace Sportify.Services
                 user.Weight = updatedUser.Weight;
             }
 
+            if (!string.IsNullOrEmpty(updatedUser.Role))
+            {
+                user.Role = updatedUser.Role;
+            }
+
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
@@ -185,6 +190,39 @@ namespace Sportify.Services
         {
             return await _context.Users.ToListAsync();
         }
+
+        public async Task<UpdateProfileResult> UpdateUserRole(int id, string role)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return new UpdateProfileResult
+                {
+                    IsSuccess = false,
+                    Message = "Користувача не знайдено."
+                };
+            }
+
+            if (string.IsNullOrEmpty(role))
+            {
+                return new UpdateProfileResult
+                {
+                    IsSuccess = false,
+                    Message = "Роль не может быть пустой."
+                };
+            }
+
+            user.Role = role;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new UpdateProfileResult
+            {
+                IsSuccess = true,
+                Message = "Роль користувача успішно оновлено."
+            };
+        }
+
     }
 
 
@@ -210,4 +248,9 @@ namespace Sportify.Services
         public string? Message { get; set; }
     }
 
+
+    public class RoleUpdateRequest
+    {
+        public string Role { get; set; }
+    }
 }

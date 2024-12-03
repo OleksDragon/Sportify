@@ -122,5 +122,26 @@ namespace Sportify.Controllers
             var users = await _userService.GetAllUsers();
             return Ok(users);
         }
+
+
+        [Authorize(Roles = "admin")]
+        [HttpPut("update-role/{id}")]
+        public async Task<IActionResult> UpdateUserRole(int id, [FromBody] RoleUpdateRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Role))
+            {
+                return BadRequest(new { Message = "Роль не может быть пустой." });
+            }
+
+            var result = await _userService.UpdateUserRole(id, request.Role);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { Message = result.Message });
+            }
+
+            return Ok(new { Message = result.Message });
+        }
+
+
     }
 }

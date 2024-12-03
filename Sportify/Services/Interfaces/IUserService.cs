@@ -10,5 +10,6 @@ namespace Sportify.Services.Interfaces
         Task<bool> DeleteUser(int id);
         Task<UpdateProfileResult> UpdateUserProfile(int id, User updatedUser);
         Task<IEnumerable<User>> GetAllUsers();
+        Task<UpdateProfileResult> UpdateUserRole(int id, string role);
     }
 }
