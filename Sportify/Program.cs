@@ -8,6 +8,7 @@ using Sportify.Services.Interfaces;
 using Sportify.Services;
 using System.Text;
 using System.Security.Claims;
+using Sportify.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +41,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSingleton<INotificationService, NotificationService>();
+
+// Регистрация фоновых задач
+builder.Services.AddHostedService<SendNotificationService>();
 
 
 // Настройка CORS
