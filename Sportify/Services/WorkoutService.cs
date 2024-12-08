@@ -171,7 +171,13 @@ namespace Sportify.Services
 
                     if (type != null)
                     {
+                        workout.WorkoutTypeId = type.Id;
                         workout.WorkoutType = type;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(newWorkout.WorkoutGoal))
+                    {
+                        workout.WorkoutGoal = newWorkout.WorkoutGoal;
                     }
 
                     if(newWorkout.Complexity <= 10 && newWorkout.Complexity >= 1)
