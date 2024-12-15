@@ -180,6 +180,11 @@ namespace Sportify.Services
                 user.Role = updatedUser.Role;
             }
 
+            if (!string.IsNullOrEmpty(updatedUser.TelegramUsername))
+            {
+                user.TelegramUsername = updatedUser.TelegramUsername;
+            }
+
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
