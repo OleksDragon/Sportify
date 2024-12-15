@@ -9,6 +9,7 @@ using Sportify.Services;
 using System.Text;
 using System.Security.Claims;
 using Sportify.BackgroundServices;
+using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,13 @@ builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddSingleton<INotificationService, NotificationService>();
 
+// Регистрация TelegramService
+var telegramToken = builder.Configuration.GetSection("TelegramSettings")["BotToken"];
+builder.Services.AddSingleton(new TelegramBotService(
+    telegramToken,
+    builder.Services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>()));
+
+
 // Регистрация фоновых задач
 builder.Services.AddHostedService<SendNotificationService>();
 
@@ -62,6 +70,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    var botService = app.Services.GetRequiredService<TelegramBotService>();
+    botService.Start();
+});
 
 // Обработка ошибок
 app.UseExceptionHandler("/error");

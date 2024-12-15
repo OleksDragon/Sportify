@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sportify.Data;
 
@@ -11,9 +12,11 @@ using Sportify.Data;
 namespace Sportify.Migrations
 {
     [DbContext(typeof(SportifyContext))]
-    partial class SportifyContextModelSnapshot : ModelSnapshot
+    [Migration("20241215143434_AddTelegramUsernameToUser")]
+    partial class AddTelegramUsernameToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace Sportify.Migrations
 
                     b.HasIndex("WorkoutsId");
 
-                    b.ToTable("ExerciseWorkout", (string)null);
+                    b.ToTable("ExerciseWorkout");
                 });
 
             modelBuilder.Entity("Sportify.Models.Exercise", b =>
@@ -54,7 +57,7 @@ namespace Sportify.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Exercises", (string)null);
+                    b.ToTable("Exercises");
                 });
 
             modelBuilder.Entity("Sportify.Models.Progress", b =>
@@ -86,7 +89,7 @@ namespace Sportify.Migrations
 
                     b.HasIndex("WorkoutId");
 
-                    b.ToTable("Progresses", (string)null);
+                    b.ToTable("Progresses");
                 });
 
             modelBuilder.Entity("Sportify.Models.User", b =>
@@ -139,7 +142,7 @@ namespace Sportify.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Sportify.Models.Workout", b =>
@@ -182,7 +185,7 @@ namespace Sportify.Migrations
 
                     b.HasIndex("WorkoutTypeId");
 
-                    b.ToTable("Workouts", (string)null);
+                    b.ToTable("Workouts");
                 });
 
             modelBuilder.Entity("Sportify.Models.WorkoutType", b =>
@@ -206,7 +209,7 @@ namespace Sportify.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WorkoutTypes", (string)null);
+                    b.ToTable("WorkoutTypes");
 
                     b.HasData(
                         new

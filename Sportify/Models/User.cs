@@ -42,6 +42,10 @@ namespace Sportify.Models
         [RegularExpression("^(admin|trainer|user)$", ErrorMessage = "Роль має бути 'admin', 'trainer' або 'user'.")]
         public string Role { get; set; } = "user";
 
+        // Добавляем новое поле для Telegram
+        [StringLength(100, ErrorMessage = "Ім'я користувача Telegram не повинно перевищувати 100 символів.")]
+        public string? TelegramUsername { get; set; } = null;
+
         [JsonIgnore]
         public virtual ICollection<Workout>? Workouts { get; set; } = null;
 
