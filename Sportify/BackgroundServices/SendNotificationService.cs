@@ -10,12 +10,14 @@ namespace Sportify.BackgroundServices
         private readonly INotificationService _notificationService;
         private readonly ILogger<SendNotificationService> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly TelegramBotService _telegramBotService;
 
-        public SendNotificationService(INotificationService notificationService, ILogger<SendNotificationService> logger, IServiceProvider serviceProvider)
+        public SendNotificationService(INotificationService notificationService, ILogger<SendNotificationService> logger, IServiceProvider serviceProvider, TelegramBotService telegramBotService)
         {
             _notificationService = notificationService;
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _telegramBotService = telegramBotService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -126,6 +128,7 @@ namespace Sportify.BackgroundServices
                     </html>";
 
                     Task.Run(() => _notificationService.SendNotificaton(user.Email, "Нагадування", emailHtml));
+                    Task.Run(() => _telegramBotService.SendNotify(user.TelegramUsername, workout.Date.ToShortTimeString()));
                 }
             }
         }

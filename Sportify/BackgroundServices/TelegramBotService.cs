@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sportify.Data;
 using Sportify.Models;
+using System;
 using System.Globalization;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -12,11 +13,13 @@ public class TelegramBotService
 {
     private readonly TelegramBotClient _botClient;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly List<long> sendNotifications;
 
     public TelegramBotService(string botToken, IServiceScopeFactory scopeFactory)
     {
         _botClient = new TelegramBotClient(botToken);
         _scopeFactory = scopeFactory;
+        sendNotifications = new List<long>();
     }
 
     public void Start()
@@ -103,7 +106,21 @@ public class TelegramBotService
         }
     }
 
-    // Получение Telegram-username пользователя
+    private async Task NeedNotifyUserAsync(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+        if (sendNotifications.Contains(chatId))
+        {
+            sendNotifications.Remove(chatId);
+            await _botClient.SendTextMessageAsync(chatId, "Ви більше не будете отримувати нагадування щодо тренувань");
+        }
+        else
+        {
+            sendNotifications.Add(chatId);
+            await _botClient.SendTextMessageAsync(chatId, "Нагадування щодо тренувань увімкнено");
+        }
+    }
+
+        // Получение Telegram-username пользователя
     private async Task<string> GetTelegramUsernameAsync(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
     {
         var user = await botClient.GetChatMemberAsync(chatId, chatId);
@@ -115,6 +132,7 @@ public class TelegramBotService
     {
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
         {
+            new[] { InlineKeyboardButton.WithCallbackData("Увімкнути/вимкнути нагадування", "notify") },
             new[] { InlineKeyboardButton.WithCallbackData("Додати тренування", "add_workout") },
             new[] { InlineKeyboardButton.WithCallbackData("Список тренувань", "list") },
             new[] { InlineKeyboardButton.WithCallbackData("Допомога", "help") }
@@ -176,6 +194,11 @@ public class TelegramBotService
                 await SendMainMenuAsync(chatId, botClient, cancellationToken);
                 break;
 
+            case "notify":
+                // Включаем/выключаем напоминание
+                await NeedNotifyUserAsync(chatId, botClient, cancellationToken);
+                break;
+
             default:
                 await SendUnknownCommandMessage(chatId, botClient, cancellationToken);
                 break;
@@ -186,7 +209,7 @@ public class TelegramBotService
     {
         await botClient.SendTextMessageAsync(chatId,
             "Введіть дані про тренування у форматі:\n" +
-            "Назва | Дата (YYYY-MM-DD HH:mm) | Тип (1 – кардіо, 2 – силове) | Ціль | Складність (1-10)",
+            "Назва | Дата (YYYY-MM-DD HH:mm) | Тип (1 – кардіо, 2 – силове) | Ціль (1 - схуднення, 2 - набір маси) | Складність (1-10)",
             parseMode: ParseMode.Markdown,
             cancellationToken: cancellationToken);
     }
@@ -223,7 +246,7 @@ public class TelegramBotService
                         Name = parts[0].Trim(),
                         Date = DateTime.ParseExact(parts[1].Trim(), "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
                         WorkoutTypeId = int.Parse(parts[2].Trim()),
-                        WorkoutGoal = parts[3].Trim(),
+                        WorkoutGoal = int.Parse(parts[3].Trim()) == 1 ? "Схуднення" : "Набір",
                         Complexity = int.Parse(parts[4].Trim()),
                         IsCompleted = false,
                         User = user
@@ -408,7 +431,7 @@ public class TelegramBotService
     {
         await botClient.SendTextMessageAsync(chatId,
                           "Ось доступні команди для бота:\n" +
-                          "/start - Почати роботу з ботом\n" +
+                          "/notify - Увімкнути/вимкнути нагадування про тренування\n" +
                           "Додати тренування - Додайте тренування, використовуючи формат: Назва | Дата (YYYY-MM-DD HH:mm) | Тип (1 - кардіо, 2 - силове) | Ціль | Складність (1-10)\n" +
                           "Список тренувань - Переглянути список своїх тренувань\n" +
                           "Допомога - Отримати цю інформацію знову",
@@ -419,5 +442,18 @@ public class TelegramBotService
     {
         Console.WriteLine($"Помилка: {exception.Message}");
         return Task.CompletedTask;
+    }
+
+    public async Task SendNotify(string username, string time)
+    {
+        foreach (var id in sendNotifications)
+        {
+            var chat = await _botClient.GetChatAsync(id);
+            if (chat.Username == username)
+            {
+                await _botClient.SendTextMessageAsync(chat.Id, $"У вас заплановано тренування о {time}");
+                break;
+            }
+        }
     }
 }
