@@ -46,7 +46,7 @@ namespace Sportify.BackgroundServices
             using (var scope = _serviceProvider.CreateScope())
             {
                 var _context = scope.ServiceProvider.GetRequiredService<SportifyContext>();
-                var futureWorkouts = await _context.Workouts.Include(w => w.User).Where(w => w.Date >= DateTime.Now.AddHours(1).AddMinutes(-1) && w.Date < DateTime.Now.AddHours(1)).ToListAsync();
+                var futureWorkouts = await _context.Workouts.Include(w => w.User).Where(w => w.Date >= DateTime.Now.AddHours(1).AddMinutes(-1) && w.Date < DateTime.Now.AddHours(1) && !w.IsCompleted).ToListAsync();
 
                 foreach (var workout in futureWorkouts)
                 {

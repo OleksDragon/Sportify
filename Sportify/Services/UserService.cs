@@ -175,10 +175,11 @@ namespace Sportify.Services
                 user.Weight = updatedUser.Weight;
             }
 
-            if (!string.IsNullOrEmpty(updatedUser.Role))
-            {
-                user.Role = updatedUser.Role;
-            }
+            // Для смены роли есть отдельный метод
+            //if (!string.IsNullOrEmpty(updatedUser.Role))
+            //{
+            //    user.Role = updatedUser.Role;
+            //}
 
             if (!string.IsNullOrEmpty(updatedUser.TelegramUsername))
             {
