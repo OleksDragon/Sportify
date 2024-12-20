@@ -27,6 +27,8 @@ namespace Sportify.Models
         [Range(minimum: 1, maximum: 10)]
         public int Complexity { get; set; } // Сложность (от 1 до 10)
 
+        public string Comment { get; set; } = "";
+
         public bool IsCompleted { get; set; } = false;
 
         // Связь с пользователем

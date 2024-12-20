@@ -24,6 +24,8 @@ namespace Sportify.Services.Interfaces
 
         Task<bool> CompleteWorkout(int id);
 
+        Task<bool> CommentWorkout(int id, string comment);
+
         // Удаление тренировки
         Task<bool> DeleteWorkout(int id);
     }

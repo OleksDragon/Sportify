@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sportify.Models;
+using Sportify.Services;
 using Sportify.Services.Interfaces;
 
 namespace Sportify.Controllers
@@ -136,6 +137,18 @@ namespace Sportify.Controllers
             {
                 return BadRequest("Помилка оновлення");
             }
+        }
+
+        [Authorize]
+        [HttpPatch("comment/{id}")]
+        public async Task<IActionResult> CommentWorkout(int id, [FromBody] CommentWorkout comment)
+        {
+            Console.WriteLine(comment.Comment);
+            if(await _service.CommentWorkout(id, comment.Comment))
+            {
+                return Ok();
+            }
+            return BadRequest("Помилка оновлення");
         }
 
         // Удаление

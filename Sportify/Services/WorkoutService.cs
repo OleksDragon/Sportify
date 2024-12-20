@@ -16,6 +16,30 @@ namespace Sportify.Services
             _context = context;
         }
 
+        public async Task<bool> CommentWorkout(int id, string comment)
+        {
+            try
+            {
+                Console.WriteLine(comment);
+                var workout = await _context.Workouts.FirstOrDefaultAsync(x => x.Id == id);
+                if (workout != null)
+                {
+                    Console.WriteLine(comment);
+
+                    workout.Comment = comment;
+                    _context.Workouts.Update(workout);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
         public async Task<bool> CompleteWorkout(int id)
         {
             try
@@ -200,5 +224,10 @@ namespace Sportify.Services
             }
             return true;
         }
+    }
+
+    public class CommentWorkout
+    {
+        public string Comment { get; set; }
     }
 }
