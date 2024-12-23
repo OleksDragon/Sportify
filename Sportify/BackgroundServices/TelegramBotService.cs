@@ -55,6 +55,10 @@ public class TelegramBotService
         {
             await AuthenticateUserAsync(chatId, botClient, cancellationToken); 
         }
+        else if (messageText.Contains('&'))
+        {
+            await UpdateWorkout(messageText, chatId, botClient, cancellationToken);
+        }
         else if (messageText.Contains('|'))
         {
             await AddWorkout(messageText, chatId, botClient, cancellationToken);
@@ -134,6 +138,7 @@ public class TelegramBotService
         {
             new[] { InlineKeyboardButton.WithCallbackData("Увімкнути/вимкнути нагадування", "notify") },
             new[] { InlineKeyboardButton.WithCallbackData("Додати тренування", "add_workout") },
+            new[] { InlineKeyboardButton.WithCallbackData("Оновити тренування", "update_workout") },
             new[] { InlineKeyboardButton.WithCallbackData("Список тренувань", "list") },
             new[] { InlineKeyboardButton.WithCallbackData("Допомога", "help") }
         });
@@ -162,6 +167,21 @@ public class TelegramBotService
             case "add_workout":
                 // Добавление тренировки
                 await SendWorkoutDataFormatMessage(chatId, botClient, cancellationToken);
+                break;
+
+            case "update_workout":
+                // Список действий для обновления
+                await SendActionUpdateChoice(chatId, botClient, cancellationToken);
+                break;
+
+            case "update_workout_data":
+                // Обновление тренировки
+                await SendUpdateDataFormat(chatId, botClient, cancellationToken);
+                break;
+
+            case "select_exercises":
+                // Назначение упражнений
+                await SendChangeExercisesFormat(chatId, botClient, cancellationToken);
                 break;
 
             case "list":
@@ -214,6 +234,37 @@ public class TelegramBotService
             cancellationToken: cancellationToken);
     }
 
+    private async Task SendActionUpdateChoice(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[] { InlineKeyboardButton.WithCallbackData("Оновити дані про тренування", "update_workout_data") },
+            new[] { InlineKeyboardButton.WithCallbackData("Вибрати вправи", "select_exercises") },
+            new[] { InlineKeyboardButton.WithCallbackData("Назад в меню", "back_to_menu") }
+        });
+
+        await botClient.SendTextMessageAsync(chatId,
+            "Оберіть дію:",
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task SendUpdateDataFormat(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+        await ShowAllWorkouts(chatId, botClient, cancellationToken);
+
+        await botClient.SendTextMessageAsync(chatId,
+            "Введіть дані про тренування у форматі:\n" +
+            "Id & Назва | Дата (YYYY-MM-DD HH:mm) | Тип (1 – кардіо, 2 – силове) | Ціль (1 - схуднення, 2 - набір маси) | Складність (1-10)",
+            parseMode: ParseMode.Markdown,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task SendChangeExercisesFormat(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+
+    }
+
     private async Task AddWorkout(string messageText, long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
     {
         var parts = messageText.Split('|');
@@ -257,6 +308,81 @@ public class TelegramBotService
 
                     await botClient.SendTextMessageAsync(chatId,
                         $"Тренування '{workout.Name}' успішно додано для користувача {user.UserName}!",
+                        cancellationToken: cancellationToken);
+                }
+            }
+            catch
+            {
+                await botClient.SendTextMessageAsync(chatId,
+                    "Помилка у форматі даних. Спробуйте знову.",
+                    cancellationToken: cancellationToken);
+            }
+        }
+        else
+        {
+            await botClient.SendTextMessageAsync(chatId,
+                "Невірний формат. Спробуйте ще раз, використовуючи формат: Id & Назва | Дата (YYYY-MM-DD HH:mm) | Тип (1 – кардіо, 2 – силове) | Ціль (1 - схуднення, 2 - набір маси) | Складність (1-10)",
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    private async Task UpdateWorkout(string messageText, long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+        int workoutId;
+        var parts = messageText.Substring(messageText.IndexOf('&') + 1).Split('|');
+        if (parts.Length == 5 && Int32.TryParse(messageText.Substring(0, messageText.IndexOf('&')), out workoutId))
+        {
+            try
+            {
+                var telegramUsername = await GetTelegramUsernameAsync(chatId, botClient, cancellationToken);
+
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<SportifyContext>();
+
+                    var workout = dbContext.Workouts.FirstOrDefault(w => w.Id == workoutId);
+
+                    if (workout == null)
+                    {
+                        await botClient.SendTextMessageAsync(chatId,
+                        "Тренування з таким id не існує.",
+                        cancellationToken: cancellationToken);
+                        return;
+                    }
+
+                    // Плучаем пользователя по username 
+                    var user = await dbContext.Users.Include(u => u.Workouts)
+                        .FirstOrDefaultAsync(u => u.TelegramUsername == telegramUsername, cancellationToken);
+
+                    if (user == null)
+                    {
+                        await botClient.SendTextMessageAsync(chatId,
+                            "Ви не зареєстровані в системі. Спочатку зареєструйтесь.",
+                            cancellationToken: cancellationToken);
+                        return;
+                    }
+
+                    // Проверка на то, пренадлежит ли пользователю тренировка
+                    if(!user.Workouts.Any(w => w.Id == workout.Id))
+                    {
+                        await botClient.SendTextMessageAsync(chatId,
+                           "Це тренування вам не належить.",
+                           cancellationToken: cancellationToken);
+                        return;
+                    }
+
+                    // Обновляем тренировку
+                    workout.Name = parts[0].Trim();
+                    workout.Date = DateTime.ParseExact(parts[1].Trim(), "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+                    workout.WorkoutTypeId = int.Parse(parts[2].Trim());
+                    workout.WorkoutGoal = int.Parse(parts[3].Trim()) == 1 ? "Схуднення" : "Набір";
+                    workout.Complexity = int.Parse(parts[4].Trim());
+
+                    dbContext.Workouts.Update(workout);
+                    await dbContext.SaveChangesAsync(cancellationToken);
+
+                    await botClient.SendTextMessageAsync(chatId,
+                        $"Тренування '{workout.Name}' успішно оновлено!",
                         cancellationToken: cancellationToken);
                 }
             }
