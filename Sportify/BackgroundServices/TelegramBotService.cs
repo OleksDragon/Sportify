@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sportify.Data;
 using Sportify.Models;
+using Sportify.Services;
+using Sportify.Services.Interfaces;
 using System;
 using System.Globalization;
 using Telegram.Bot;
@@ -54,6 +56,10 @@ public class TelegramBotService
         if (messageText.StartsWith("/start"))
         {
             await AuthenticateUserAsync(chatId, botClient, cancellationToken); 
+        }
+        else if (messageText.Contains('$'))
+        {
+            await SetWorkoutExercises(messageText, chatId, botClient, cancellationToken);
         }
         else if (messageText.Contains('&'))
         {
@@ -262,7 +268,14 @@ public class TelegramBotService
 
     private async Task SendChangeExercisesFormat(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
     {
+        await ShowAllWorkouts(chatId, botClient, cancellationToken);
+        await ShowAllExercises(chatId, botClient, cancellationToken);
 
+        await botClient.SendTextMessageAsync(chatId,
+            "Оберіть вправи для тренування у форматі:\n" +
+            "Id (тренування) $ Id1 (вправи) | Id2 (вправи) | Id3 (вправи) ... (можна обрати довільну кількість вправ)",
+            parseMode: ParseMode.Markdown,
+            cancellationToken: cancellationToken);
     }
 
     private async Task AddWorkout(string messageText, long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
@@ -401,6 +414,40 @@ public class TelegramBotService
         }
     }
 
+    private async Task SetWorkoutExercises(string messageText, long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+        int workoutId;
+        var ids = messageText.Substring(messageText.IndexOf('$') + 1).Split('|');
+        if (Int32.TryParse(messageText.Substring(0, messageText.IndexOf('$')), out workoutId))
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var workoutService = scope.ServiceProvider.GetRequiredService<IWorkoutService>();
+
+                List<int> idsToInt = new List<int>();
+                int id;
+                foreach (string str in ids)
+                {
+                    if (int.TryParse(str, out id))
+                    {
+                        idsToInt.Add(id);
+                    }
+                }
+
+                await workoutService.SetExercisesByWorkoutId(workoutId, idsToInt);
+            }
+            await botClient.SendTextMessageAsync(chatId,
+               "Тренування оновлено",
+               cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await botClient.SendTextMessageAsync(chatId,
+               "Невірний формат, спробуйте знову:\n" +
+            "Id (тренування) $ Id1 (вправи) | Id2 (вправи) | Id3 (вправи) ... (можна обрати довільну кількість вправ)",
+               cancellationToken: cancellationToken);
+        }
+    }
 
     private async Task SendWorkoutTypesMenu(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
     {
@@ -550,6 +597,32 @@ public class TelegramBotService
                     "Не знайдено користувача з таким іменем Telegram.",
                     cancellationToken: cancellationToken);
             }
+        }
+    }
+
+    // Отображение упражнений 
+    private async Task ShowAllExercises(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    {
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<SportifyContext>();
+
+            var exercises = dbContext.Exercises;
+                if (exercises.Any())
+                {
+                    var exercisesStr = string.Join("\n", exercises.Select(e =>
+                               $"{e.Id}: {e.Name} - {e.Description}"));
+                    await botClient.SendTextMessageAsync(chatId,
+                        $"Вправи:\n{exercisesStr}",
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    await botClient.SendTextMessageAsync(chatId,
+                        "Вправи не знайдено.",
+                        cancellationToken: cancellationToken);
+                }
+            
         }
     }
 
