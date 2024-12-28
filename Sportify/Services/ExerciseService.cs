@@ -36,6 +36,11 @@ namespace Sportify.Services
         // Добавление нового упражнения
         public async Task AddExerciseAsync(Exercise exercise)
         {
+            // Если упражнение нельзя изменить, то оно становиться общим и не имеет пользователя
+            if(exercise.Unchanged == false)
+            {
+                exercise.User = _context.Users.FirstOrDefault(u => u.Id == exercise.UserId);
+            }
             await _context.Exercises.AddAsync(exercise);
             await _context.SaveChangesAsync();
         }

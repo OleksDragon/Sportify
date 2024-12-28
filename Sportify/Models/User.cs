@@ -47,6 +47,9 @@ namespace Sportify.Models
         public string? TelegramUsername { get; set; } = null;
 
         [JsonIgnore]
+        public virtual ICollection<Exercise>? Exercises { get; set; } = null;
+
+        [JsonIgnore]
         public virtual ICollection<Workout>? Workouts { get; set; } = null;
 
         [JsonIgnore]

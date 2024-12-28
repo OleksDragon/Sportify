@@ -269,7 +269,7 @@ public class TelegramBotService
     private async Task SendChangeExercisesFormat(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
     {
         await ShowAllWorkouts(chatId, botClient, cancellationToken);
-        await ShowAllExercises(chatId, botClient, cancellationToken);
+        await ShowAllUserExercises(chatId, botClient, cancellationToken);
 
         await botClient.SendTextMessageAsync(chatId,
             "Оберіть вправи для тренування у форматі:\n" +
@@ -424,11 +424,26 @@ public class TelegramBotService
             {
                 var workoutService = scope.ServiceProvider.GetRequiredService<IWorkoutService>();
 
+                var dbContext = scope.ServiceProvider.GetRequiredService<SportifyContext>();
+                var telegramUsername = await GetTelegramUsernameAsync(chatId, botClient, cancellationToken);
+
+                // Плучаем пользователя по username 
+                var user = await dbContext.Users.Include(u => u.Workouts)
+                    .FirstOrDefaultAsync(u => u.TelegramUsername == telegramUsername, cancellationToken);
+
+                if (user == null)
+                {
+                    await botClient.SendTextMessageAsync(chatId,
+                        "Ви не зареєстровані в системі. Спочатку зареєструйтесь.",
+                        cancellationToken: cancellationToken);
+                    return;
+                }
+
                 List<int> idsToInt = new List<int>();
                 int id;
                 foreach (string str in ids)
                 {
-                    if (int.TryParse(str, out id))
+                    if (int.TryParse(str, out id) && dbContext.Exercises.FirstOrDefault(e => e.Id == id)?.UserId == user.Id)
                     {
                         idsToInt.Add(id);
                     }
@@ -601,13 +616,26 @@ public class TelegramBotService
     }
 
     // Отображение упражнений 
-    private async Task ShowAllExercises(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
+    private async Task ShowAllUserExercises(long chatId, ITelegramBotClient botClient, CancellationToken cancellationToken)
     {
         using (var scope = _scopeFactory.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<SportifyContext>();
+            var telegramUsername = await GetTelegramUsernameAsync(chatId, botClient, cancellationToken);
 
-            var exercises = dbContext.Exercises;
+            // Плучаем пользователя по username 
+            var user = await dbContext.Users.Include(u => u.Workouts)
+                .FirstOrDefaultAsync(u => u.TelegramUsername == telegramUsername, cancellationToken);
+
+            if (user == null)
+            {
+                await botClient.SendTextMessageAsync(chatId,
+                    "Ви не зареєстровані в системі. Спочатку зареєструйтесь.",
+                    cancellationToken: cancellationToken);
+                return;
+            }
+
+            var exercises = dbContext.Exercises.Where(e => e.Unchanged || e.UserId == user.Id);
                 if (exercises.Any())
                 {
                     var exercisesStr = string.Join("\n", exercises.Select(e =>
