@@ -31,6 +31,8 @@ namespace Sportify.Models
 
         public bool IsCompleted { get; set; } = false;
 
+        public int UserId { get; set; }
+
         // Связь с пользователем
         [JsonIgnore]
         public virtual User? User { get; set; }
